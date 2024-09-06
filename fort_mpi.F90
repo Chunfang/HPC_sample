@@ -3,7 +3,7 @@ program mpi_example
     implicit none
 
     integer :: rank, size, ierr, source, dest, tag
-    integer :: send_data, recv_data, global_sum
+    integer :: dat_sent, dat_rec, sum_rank
     integer :: status(MPI_STATUS_SIZE)
 
     ! Initialize MPI
@@ -17,21 +17,19 @@ program mpi_example
 
     ! Send and Receive between rank 0 and 1
     if (rank == source) then
-        send_data = 42
-        call MPI_Send(send_data, 1, MPI_INTEGER, dest, tag, MPI_COMM_WORLD, ierr)
-        print *, 'Process', rank, 'sent data', send_data, 'to process', dest
+        dat_sent = 42
+        call MPI_Send(dat_sent, 1, MPI_INTEGER, dest, tag, MPI_COMM_WORLD, ierr)
+        print *, 'rank', rank, 'sent', dat_sent, 'to rank', dest
     else if (rank == dest) then
-        call MPI_Recv(recv_data, 1, MPI_INTEGER, source, tag, MPI_COMM_WORLD, status, ierr)
-        print *, 'Process', rank, 'received data', recv_data, 'from process', source
+        call MPI_Recv(dat_rec, 1, MPI_INTEGER, source, tag, MPI_COMM_WORLD, status, ierr)
+        print *, 'rank', rank, 'received data', dat_rec, 'from rank', source
     end if
 
-    ! All processes contribute their rank to the sum using MPI_Allreduce
-    call MPI_Allreduce(rank, global_sum, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
+    ! All ranks add their rank_num to the sum using MPI_Allreduce
+    call MPI_Allreduce(rank, sum_rank, 1, MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, ierr)
 
-    ! Print the result of the global sum (should be sum of all ranks)
-    print *, 'Process', rank, ': Global sum of all ranks is', global_sum
-
-    ! Finalize MPI
+    ! print sum of all ranks)
+    print *, 'Process', rank, ': Global sum of all ranks is', sum_rank
     call MPI_Finalize(ierr)
 
 end program mpi_example
